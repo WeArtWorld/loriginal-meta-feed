@@ -2,12 +2,18 @@
 
 This repo builds the product feed for the Meta catalog "L'Original — Œuvres" (`598914184189673`).
 
-Every night at 07:17 UTC, a GitHub Action reads the public artwork API on loriginal.org, writes two CSV files to `flux/`, and commits them. Meta fetches these files every day.
+Every night at 07:17 UTC, a GitHub Action reads the public artwork API on loriginal.org, writes the Meta and Google feed files to `flux/`, and commits them. Meta fetches these files every day.
 
 | File | Meta feed | What it holds |
 |---|---|---|
 | `flux/catalogue-fr.csv` | `Flux Merchant Center FR` (primary) | One row per published artwork, in French |
 | `flux/catalogue-en.csv` | `Traductions EN (en_US)` (language override) | English title, description and link for the same ids |
+| `flux/google-fr.tsv` | Google Merchant Center `5088161983`, French data source | Full rows in French, feed label CA |
+| `flux/google-en.tsv` | Google Merchant Center `5088161983`, English data source | Full rows in English, feed label CA |
+
+Google needs one complete file per language; Meta takes a primary feed plus a language override. Both come from the same rows, so ids, prices and custom labels always match.
+
+Artworks listed twice by the site API, and artworks with no price, are skipped.
 
 ## Rules that must not change
 
