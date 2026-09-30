@@ -2,7 +2,7 @@
 
 Produit deux fichiers dans le dossier de sortie (defaut : ./flux) :
     catalogue-fr.csv   flux principal, une ligne par oeuvre publiee
-    catalogue-en.csv   surcharge de langue en_US (memes id, titre et lien anglais)
+    catalogue-en.csv   surcharge de langue en_XX (memes id, titre et lien anglais)
 
 Les id restent au format deja utilise par le catalogue et le pixel :
 LORIGINAL-<id>-FR. Les etiquettes custom_label_0..4 portent les categories du
@@ -136,7 +136,7 @@ def main() -> None:
         })
         lignes_en.append({
             "id": rid,
-            "override": "en_US",
+            "override": "en_XX",
             "title": (o.get("nom_en") or o.get("nom") or f"Artwork {oid}")[:150],
             "description": description(o, "en")[:5000],
             "link": f"{SITE}/en/painting/{slug}",
