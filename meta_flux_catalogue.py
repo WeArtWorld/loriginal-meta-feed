@@ -3,6 +3,8 @@
 Produit deux fichiers dans le dossier de sortie (defaut : ./flux) :
     catalogue-fr.csv   flux principal, une ligne par oeuvre publiee
     catalogue-en.csv   surcharge de langue en_US (memes id, titre et lien anglais)
+    google-fr.tsv      flux Google Merchant Center complet, en francais
+    google-en.tsv      flux Google Merchant Center complet, en anglais
 
 Les id restent au format deja utilise par le catalogue et le pixel :
 LORIGINAL-<id>-FR. Les etiquettes custom_label_0..4 portent les categories du
@@ -35,6 +37,7 @@ COLONNES = ["id", "title", "description", "availability", "condition", "price", 
             "additional_image_link", "brand", "product_type", "google_product_category",
             "custom_label_0", "custom_label_1", "custom_label_2", "custom_label_3", "custom_label_4"]
 COLONNES_EN = ["id", "override", "title", "description", "link"]
+COLONNES_GOOGLE = COLONNES + ["identifier_exists"]
 
 
 def lister(**params) -> list[dict]:
@@ -101,12 +104,16 @@ def main() -> None:
         for code, valeur in table.items():
             membres[famille][code] = {o["id"] for o in lister(**{param: valeur})}
 
-    lignes_fr, lignes_en = [], []
+    lignes_fr, lignes_en, lignes_google_en = [], [], []
+    vus: set[int] = set()
     for o in oeuvres:
         oid = o["id"]
-        if o.get("prix") in (None, "") or not o.get("url_image_oeuvre"):
+        if oid in vus or o.get("prix") in (None, "") or not o.get("url_image_oeuvre"):
             continue
         dollars = float(o["prix"]) / 100
+        if dollars <= 0:
+            continue
+        vus.add(oid)
         en_stock = o.get("en_stock") not in (False, 0, "0", None)
         slug = (o.get("slug") or "").strip() or str(oid)
         image, autres = images(o)
@@ -141,12 +148,27 @@ def main() -> None:
             "description": description(o, "en")[:5000],
             "link": f"{SITE}/en/painting/{slug}",
         })
+        lignes_google_en.append({
+            **lignes_fr[-1],
+            "title": lignes_en[-1]["title"],
+            "description": lignes_en[-1]["description"],
+            "link": lignes_en[-1]["link"],
+            "product_type": "Art > Original paintings",
+        })
 
     for nom, colonnes, lignes in (("catalogue-fr.csv", COLONNES, lignes_fr), ("catalogue-en.csv", COLONNES_EN, lignes_en)):
         with (sortie / nom).open("w", encoding="utf-8", newline="") as f:
             w = csv.DictWriter(f, fieldnames=colonnes)
             w.writeheader()
             w.writerows(lignes)
+
+    for nom, lignes in (("google-fr.tsv", lignes_fr), ("google-en.tsv", lignes_google_en)):
+        with (sortie / nom).open("w", encoding="utf-8", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=COLONNES_GOOGLE, delimiter="	", extrasaction="ignore")
+            w.writeheader()
+            for ligne in lignes:
+                propre = {k: " ".join(str(v).split()) for k, v in ligne.items()}
+                w.writerow({**propre, "identifier_exists": "no"})
 
     en_ligne = sum(1 for l in lignes_fr if l["custom_label_4"])
     print(f"{len(lignes_fr)} oeuvres ecrites ({en_ligne} en stock) dans {sortie}")
