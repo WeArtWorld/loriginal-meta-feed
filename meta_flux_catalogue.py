@@ -2,7 +2,7 @@
 
 Produit deux fichiers dans le dossier de sortie (defaut : ./flux) :
     catalogue-fr.csv   flux principal, une ligne par oeuvre publiee
-    catalogue-en.csv   surcharge de langue en_US (memes id, titre et lien anglais)
+    catalogue-en.csv   surcharge de langue en_XX (memes id, titre et description anglais)
 
 Les id restent au format deja utilise par le catalogue et le pixel :
 LORIGINAL-<id>-FR. Les etiquettes custom_label_0..4 portent les categories du
@@ -34,7 +34,7 @@ SUPPORTS_FR = {"Canvas": "toile", "Paper": "papier", "Wood": "bois", "Metal": "m
 COLONNES = ["id", "title", "description", "availability", "condition", "price", "link", "image_link",
             "additional_image_link", "brand", "product_type", "google_product_category",
             "custom_label_0", "custom_label_1", "custom_label_2", "custom_label_3", "custom_label_4"]
-COLONNES_EN = ["id", "override", "title", "description", "link"]
+COLONNES_EN = ["id", "override", "title", "description"]
 
 
 def lister(**params) -> list[dict]:
@@ -136,10 +136,9 @@ def main() -> None:
         })
         lignes_en.append({
             "id": rid,
-            "override": "en_US",
+            "override": "en_XX",
             "title": (o.get("nom_en") or o.get("nom") or f"Artwork {oid}")[:150],
             "description": description(o, "en")[:5000],
-            "link": f"{SITE}/en/painting/{slug}",
         })
 
     for nom, colonnes, lignes in (("catalogue-fr.csv", COLONNES, lignes_fr), ("catalogue-en.csv", COLONNES_EN, lignes_en)):
