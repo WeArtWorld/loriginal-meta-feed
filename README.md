@@ -7,7 +7,7 @@ Every night at 07:17 UTC, a GitHub Action reads the public artwork API on lorigi
 | File | Meta feed | What it holds |
 |---|---|---|
 | `flux/catalogue-fr.csv` | `Flux Merchant Center FR` (primary) | One row per published artwork, in French |
-| `flux/catalogue-en.csv` | `Traductions EN (en_US)` (language override) | English title, description and link for the same ids |
+| `flux/catalogue-en.csv` | `Traductions EN (en_XX)` (language override) | English title, description and link for the same ids |
 
 ## Rules that must not change
 

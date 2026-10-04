@@ -2,7 +2,7 @@
 
 Produit deux fichiers dans le dossier de sortie (defaut : ./flux) :
     catalogue-fr.csv   flux principal, une ligne par oeuvre publiee
-    catalogue-en.csv   surcharge de langue en_US (memes id, titre et lien anglais)
+    catalogue-en.csv   surcharge de langue en_XX (memes id, titre et lien anglais)
 
 Les id restent au format deja utilise par le catalogue et le pixel :
 LORIGINAL-<id>-FR. Les etiquettes custom_label_0..4 portent les categories du
@@ -28,6 +28,8 @@ THEMES = {"calme": "Calm", "romantique": "Love", "pop": "Cinema & TV", "paysages
           "portraits": "Portrait", "animaux": "Animals"}
 TAILLES = {"grand": "large", "petit": "small", "mini": "mini"}
 PLAFONDS = (500, 1000, 1750, 2500, 4000)
+# Meta n'accepte que ses propres codes pour une surcharge de langue (en_XX, pas en_US).
+LANGUE_EN = "en_XX"
 
 SUPPORTS_FR = {"Canvas": "toile", "Paper": "papier", "Wood": "bois", "Metal": "métal", "Panel": "panneau"}
 
@@ -136,11 +138,15 @@ def main() -> None:
         })
         lignes_en.append({
             "id": rid,
-            "override": "en_US",
+            "override": LANGUE_EN,
             "title": (o.get("nom_en") or o.get("nom") or f"Artwork {oid}")[:150],
             "description": description(o, "en")[:5000],
             "link": f"{SITE}/en/painting/{slug}",
         })
+
+    ids_fr = {l["id"] for l in lignes_fr}
+    if any(l["id"] not in ids_fr or l["override"] != LANGUE_EN for l in lignes_en):
+        sys.exit("Flux EN incoherent avec le flux FR (id absent ou code de langue invalide) : flux non ecrit.")
 
     for nom, colonnes, lignes in (("catalogue-fr.csv", COLONNES, lignes_fr), ("catalogue-en.csv", COLONNES_EN, lignes_en)):
         with (sortie / nom).open("w", encoding="utf-8", newline="") as f:
