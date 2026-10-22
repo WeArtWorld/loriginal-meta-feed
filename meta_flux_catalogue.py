@@ -146,6 +146,8 @@ def main() -> None:
             continue
         dollars = float(o["prix"]) / 100
         en_stock = o.get("en_stock") not in (False, 0, "0", None)
+        if not en_stock or dollars <= 0:
+            continue
         slug = (o.get("slug") or "").strip() or str(oid)
         image, autres = images(o)
 
@@ -157,7 +159,7 @@ def main() -> None:
             "id": rid,
             "title": (o.get("nom") or o.get("nom_en") or f"Oeuvre {oid}")[:150],
             "description": description(o, "fr")[:5000],
-            "availability": "in stock" if en_stock else "out of stock",
+            "availability": "in stock",
             "condition": "new",
             "price": f"{dollars:.2f} CAD",
             "link": f"{SITE}/fr/peinture/{slug}",
@@ -170,7 +172,7 @@ def main() -> None:
             "custom_label_1": etiquette(codes("themes")),
             "custom_label_2": etiquette(codes("tailles")),
             "custom_label_3": etiquette(bandes_prix(dollars)),
-            "custom_label_4": "en-ligne" if en_stock else "",
+            "custom_label_4": "en-ligne",
         })
         lignes_en.append({
             "id": rid,
@@ -179,7 +181,7 @@ def main() -> None:
             "description": description(o, "en")[:5000],
             "link": f"{SITE}/en/painting/{slug}",
         })
-        if rid not in exclues and dollars > 0:
+        if rid not in exclues:
             pinterest_fr.append(lignes_fr[-1])
             pinterest_en.append({**lignes_fr[-1],
                                  "title": lignes_en[-1]["title"],
