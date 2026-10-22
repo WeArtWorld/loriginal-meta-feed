@@ -1,0 +1,1 @@
+# Ids to keep out of the Pinterest feeds (one per line). Filled after the 2026-10-22 image review.

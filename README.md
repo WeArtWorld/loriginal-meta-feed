@@ -2,12 +2,22 @@
 
 This repo builds the product feed for the Meta catalog "L'Original — Œuvres" (`598914184189673`).
 
-Every night at 07:17 UTC, a GitHub Action reads the public artwork API on loriginal.org, writes two CSV files to `flux/`, and commits them. Meta fetches these files every day.
+Every night at 07:17 UTC, a GitHub Action reads the public artwork API on loriginal.org, writes four CSV files to `flux/`, and commits them. Meta and Pinterest fetch these files every day.
 
 | File | Meta feed | What it holds |
 |---|---|---|
 | `flux/catalogue-fr.csv` | `Flux Merchant Center FR` (primary) | One row per published artwork, in French |
 | `flux/catalogue-en.csv` | `Traductions EN (en_XX)` (language override) | English title, description and link for the same ids |
+| `flux/catalogue-pinterest-fr.csv` | Pinterest catalog "L'Original - Oeuvres", French source | Same rows as the French file, minus `exclusions-pinterest.txt` and zero prices |
+| `flux/catalogue-pinterest-en.csv` | Pinterest catalog, English source | Full rows (price, images, labels) with the English title, description and link |
+
+## Pinterest exclusions
+
+Pinterest rejects a merchant account if its catalog holds products against its merchant guidelines, and artistic nudity counts. `exclusions-pinterest.txt` lists the ids to keep out of the two Pinterest files, one per line. Text after `#` is a comment. The Meta files are not affected.
+
+## The artwork API pages its results
+
+Since 2026-10-13, `/api/services/produits` without a `page` parameter stops at 300 artworks and returns `hasMore: true`. The script asks for every page of 15 (numbered from 0, with `seed=0` so the order stays stable). Without this, the run stops with "Seulement 300 oeuvres renvoyees" and no file is written.
 
 ## Rules that must not change
 
